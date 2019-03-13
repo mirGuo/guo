@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace命名空间，保证唯一 -->
+<!-- namespace写定义的接口的路径 -->
+<mapper namespace="com.wanshi.t19.cadre_remove_manage.dao.CadRmvMapper">
+	<resultMap type="CadreRemove" id="CadreRemoveMap">
+		<id property="id" column="id"/>
+		<result property="name" column="name"/>
+		<result property="insFramework" column="institutional_framework"/>
+		<result property="specDepartment" column="specific_department"/>
+		<result property="removeAction" column="remove_action"/>
+		<result property="actionState" column="action_state"/>
+		<result property="whereAbout" column="where_about"/>
+		<result property="reportTimeStr" column="report_time"/>
+	</resultMap>
+	<!-- 字典    键 -->
+	<resultMap type="SysDictKey" id="sysDictKeyMap">
+		<id property="id" column="id"/>
+		<result property="dictEn" column="dict_en"/>
+		<result property="dictZh" column="dict_zh"/>
+		<result property="descp" column="descp"/>
+	</resultMap>
+	<!-- 字典   值 -->
+	<resultMap type="SysDictVal" id="sysDictValMap">
+		<id property="id" column="id"/>
+		<result property="dictVal" column="dict_val"/>
+		<result property="keyId" column="key_id"/>
+		<result property="dictKey" column="dict_key"/>
+	</resultMap>
+	
+	<!-- 查询条件 -->
+	<sql id="tiaoJian">
+	     <if test="searchBean.name != null and searchBean.name != ''">
+		 AND NAME LIKE CONCAT('%',#{searchBean.name},'%') 
+		 </if>
+		 <if test="searchBean.specDepartment != null and searchBean.specDepartment != ''">
+		 AND specific_department LIKE CONCAT('%',#{searchBean.specDepartment},'%') 
+		 </if>
+		 <if test="searchBean.whereAbout != null and searchBean.whereAbout != ''">
+		 AND where_about LIKE CONCAT('%',#{searchBean.whereAbout},'%') 
+		 </if>
+	</sql>
+	
+	 <!-- 查询商品 -->
+	<select id="queryCadreRem" resultMap="CadreRemoveMap">
+		SELECT * FROM cadre_remove_manage where 1=1 and del = 1
+			<include refid="tiaoJian"/>
+		limit #{pageBean.start},#{pageBean.pageSize}
+	</select>
+	<select id="queryCount" resultType="int">
+  		select count(*) from cadre_remove_manage where 1=1 and del = 1
+  			<include refid="tiaoJian"/>
+  	</select>
+	
+	<!-- 根据id查询单条数据 -->
+	<select id="queryOne" resultMap="CadreRemoveMap">
+  		SELECT * FROM cadre_remove_manage WHERE id=#{id}
+  	</select>
+  	
+	  <!-- 批量删除 -->
+	<!--<delete id="batchDel">
+		DELETE FROM cadre_remove_manage WHERE id IN
+		item代表循环的每一项 collection参数的类型list open以什么开始separator以什么分割 close以什么结尾
+		<foreach item="item" collection="array" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete> -->
+	
+	<!-- 批量删除    只删除界面。数据库不删 -->
+	<update id="batchDel">
+		UPDATE cadre_remove_manage set del=0 WHERE id IN
+		<!-- item代表循环的每一项 collection参数的类型list open以什么开始separator以什么分割 close以什么结尾 -->
+		<foreach item="item" collection="array" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+	
+	<!-- 修改商品 -->
+	<update id="updateCadreRem">
+		UPDATE cadre_remove_manage
+		SET NAME = #{name},
+		  institutional_framework = #{insFramework},
+		  specific_department = #{specDepartment},
+		  remove_action = #{removeAction},
+		  action_state = #{actionState},
+		  where_about = #{whereAbout},
+		  report_time = #{reportTimeStr}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 字典查询 -->
+ 	<select id="selectfind" resultMap="sysDictValMap">
+ 		SELECT sv.dict_val FROM sys_dict_key sk
+		INNER JOIN sys_dict_val sv 
+		ON sk.id = sv.key_id
+		WHERE sk.dict_zh = #{dictZh} 
+ 	</select>
+ 	
+	 <!-- 添加商品 -->
+	<insert id="addCadreRem" parameterType="CadreRemove">
+		INSERT INTO cadre_remove_manage
+            (name,
+             institutional_framework,
+             specific_department,
+             remove_action,
+             action_state,
+             where_about,
+             report_time,
+             del)
+		VALUES (#{name},
+		        #{insFramework},
+		        #{specDepartment},
+		        #{removeAction},
+		        #{actionState},
+		        #{whereAbout},
+		        #{reportTimeStr},
+		        #{del})
+	</insert>
+</mapper>
